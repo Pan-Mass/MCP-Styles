@@ -149,48 +149,70 @@
       "shortName": "Admin",
       "css": {
         "colors": {
-          "--admin-pmc-blue": "#3D5B7E",
-          "--admin-pmc-gold": "#FCCF81",
-          "--admin-pmc-teal": "#6BB0AF",
-          "--admin-base": "#3D5B7E",
-          "--admin-base-foreground": "dynamic",
-          "--admin-reverse-bg": "#39A1F4",
-          "--admin-accent": "#6BB0AF",
-          "--admin-accent-light": "#FCCF81",
-          "--admin-accent-dark": "#101010",
-          "--admin-bg": "#FFFFFF",
-          "--admin-text": "#0B1220",
-          "--admin-surface": "#F8FAFC",
-          "--admin-border": "#E2E8F0"
+          "--admin-chrome": "#405C7F",
+          "--admin-chrome-hover": "#364F6C",
+          "--admin-chrome-foreground": "#FFFFFF",
+
+          "--admin-sidebar-bg": "#F0F1F2",
+          "--admin-sidebar-foreground": "#1F2937",
+          "--admin-sidebar-muted": "#6B7280",
+          "--admin-sidebar-active-bg": "#E4E7EB",
+
+          "--admin-bg": "#F6F7F8",
+          "--admin-surface": "#FFFFFF",
+          "--admin-surface-muted": "#F3F4F6",
+
+          "--admin-text": "#1F2937",
+          "--admin-text-muted": "#6B7280",
+          "--admin-border": "#D1D5DB",
+
+          "--admin-link": "#2F6DAA",
+          "--admin-accent": "#FCCF81",
+          "--admin-focus": "#5B8DBA",
+
+          "--admin-success": "#12B76A",
+          "--admin-warning": "#F79009",
+          "--admin-danger": "#F04438",
+
+          "--admin-table-header-bg": "#FFFFFF",
+          "--admin-row-hover": "#F3F6FA"
         },
         "borderRadius": {
-          "--radius-sm": "6px",
-          "--radius-md": "8px",
-          "--radius-lg": "10px",
-          "--radius-xl": "12px"
+          "--radius-sm": "2px",
+          "--radius-md": "3px",
+          "--radius-lg": "4px",
+          "--radius-xl": "6px"
         },
         "boxShadow": {
-          "--shadow-card": "0 8px 16px rgba(0, 0, 0, 0.1)",
-          "--shadow-hover": "0 12px 24px rgba(0, 0, 0, 0.15)",
-          "--shadow-button": "0 4px 8px rgba(0, 0, 0, 0.2)",
-          "--shadow-soft": "0 4px 6px rgba(0, 0, 0, 0.1)"
+          "--shadow-card": "0 1px 0 rgba(16, 24, 40, 0.06)",
+          "--shadow-hover": "0 1px 0 rgba(16, 24, 40, 0.10)",
+          "--shadow-button": "0 1px 0 rgba(16, 24, 40, 0.12)",
+          "--shadow-soft": "none"
         },
         "fontFamily": {
-          "--font-primary": "system-ui, -apple-system, sans-serif",
-          "--font-sans": "Helvetica Neue, Arial, sans-serif",
-          "--font-body": "Arial, sans-serif"
+          "--font-primary": "system-ui, -apple-system, Segoe UI, Roboto, Helvetica Neue, Arial, sans-serif",
+          "--font-sans": "system-ui, -apple-system, Segoe UI, Roboto, Helvetica Neue, Arial, sans-serif",
+          "--font-body": "system-ui, -apple-system, Segoe UI, Roboto, Helvetica Neue, Arial, sans-serif"
         }
       },
       "sassVariables": {
-        "$pmc-blue": "#3D5B7E",
+        "$pmc-blue": "#405C7F",
         "$pmc-gold": "#FCCF81",
         "$pmc-teal": "#6BB0AF",
+
         "$base-color": "$pmc-blue",
-        "$base-foreground-color": "dynamic($base-light-color)",
-        "$reverse-background-color": "dynamic(#39A1F4)",
-        "$accent-color": "dynamic($pmc-teal)",
-        "$accent-light-color": "dynamic($pmc-gold)",
-        "$accent-dark-color": "dynamic(#101010)"
+        "$base-foreground-color": "#FFFFFF",
+
+        "$reverse-background-color": "#2F6DAA",
+
+        "$accent-color": "$pmc-teal",
+        "$accent-light-color": "$pmc-gold",
+        "$accent-dark-color": "#1F2937",
+
+        "$sidebar-bg": "#F0F1F2",
+        "$border-color": "#D1D5DB",
+        "$text-color": "#1F2937",
+        "$muted-text-color": "#6B7280"
       }
     }
   },
