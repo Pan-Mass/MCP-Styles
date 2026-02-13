@@ -3,138 +3,190 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
+import { readFileSync } from "fs";
+import { join, dirname } from "path";
+import { fileURLToPath } from "url";
 
 /**
- * Event Information Server
- * Provides tools to fetch and search event information from cycling event sites:
+ * Design Standards Server
+ * Provides tools to access and query design standards for multiple brands:
  * - PMC (Pan-Mass Challenge)
  * - Unpaved
  * - Winter Cycle
+ * - Admin Portal
  */
 
-// Supported event sites
-interface EventSite {
-  name: string;
-  baseUrl: string;
-  sitemapPath: string;
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+// Load design standards from JSON file
+let designStandards: any;
+try {
+  const designStandardsPath = join(__dirname, "..", "Designstandards.json");
+  const designStandardsContent = readFileSync(designStandardsPath, "utf-8");
+  designStandards = JSON.parse(designStandardsContent);
+} catch (error) {
+  console.error("Error loading design standards:", error);
+  throw error;
 }
 
-const EVENT_SITES: Record<string, EventSite> = {
-  pmc: {
-    name: "Pan-Mass Challenge",
-    baseUrl: "https://www.pmc.org",
-    sitemapPath: "/sitemap.xml",
-  },
-  unpaved: {
-    name: "Unpaved",
-    baseUrl: "https://www.unpaved.org",
-    sitemapPath: "/sitemap.xml",
-  },
-  wintercycle: {
-    name: "Winter Cycle",
-    baseUrl: "https://www.wintercycle.org",
-    sitemapPath: "/sitemap.xml",
-  },
-};
+const VALID_BRANDS = Object.keys(designStandards.brands).join(", ");
 
-const VALID_SITES = Object.keys(EVENT_SITES).join(", ");
+// Helper function to generate CSS from CSS variables
+function generateCSSVariables(
+  variables: Record<string, any>,
+  indent = "  ",
+): string {
+  let css = ":root {\n";
 
-// Helper function to fetch content from a URL
-async function fetchContent(url: string): Promise<string> {
-  try {
-    const response = await fetch(url);
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+  function processObject(obj: any, prefix = "") {
+    for (const [key, value] of Object.entries(obj)) {
+      if (
+        typeof value === "object" &&
+        value !== null &&
+        !Array.isArray(value)
+      ) {
+        processObject(value, prefix);
+      } else if (typeof value === "string") {
+        css += `${indent}${key}: ${value};\n`;
+      }
     }
-    return await response.text();
-  } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : String(error);
-    throw new Error(`Failed to fetch from ${url}: ${errorMessage}`);
   }
+
+  processObject(variables);
+  css += "}\n";
+  return css;
 }
 
-// Helper function to parse sitemap XML
-function parseSitemap(xml: string): string[] {
-  const urlRegex = /<loc>(.*?)<\/loc>/g;
-  const urls: string[] = [];
-  let match;
-  while ((match = urlRegex.exec(xml)) !== null) {
-    urls.push(match[1]);
+// Helper function to generate component CSS
+function generateComponentCSS(
+  component: string,
+  rules: Record<string, any>,
+  brandPrefix: string,
+): string {
+  let css = `.${brandPrefix}-${component} {\n`;
+
+  function processRules(obj: any) {
+    for (const [key, value] of Object.entries(obj)) {
+      if (key === "css" && typeof value === "string") {
+        css += `  ${value}\n`;
+      } else if (key === "hover" && typeof value === "object") {
+        // Skip hover for main declaration
+      } else if (
+        typeof value === "object" &&
+        value !== null &&
+        "css" in value
+      ) {
+        css += `  ${value.css}\n`;
+      }
+    }
   }
-  return urls;
+
+  processRules(rules);
+  css += "}\n";
+
+  // Add hover state if exists
+  if (rules.hover) {
+    css += `\n.${brandPrefix}-${component}:hover {\n`;
+    if (typeof rules.hover.css === "string") {
+      css += `  ${rules.hover.css}\n`;
+    } else if (typeof rules.hover === "object") {
+      for (const [key, value] of Object.entries(rules.hover)) {
+        if (key === "css" && typeof value === "string") {
+          css += `  ${value}\n`;
+        }
+      }
+    }
+    css += "}\n";
+  }
+
+  return css;
 }
 
-// Helper function to extract text content from HTML
-function extractTextFromHtml(html: string): string {
-  // Remove script and style tags with their content
-  let text = html.replace(
-    /<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi,
-    "",
-  );
-  text = text.replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, "");
-  // Remove HTML tags
-  text = text.replace(/<[^>]+>/g, " ");
-  // Decode common HTML entities
-  text = text.replace(/&nbsp;/g, " ");
-  text = text.replace(/&amp;/g, "&");
-  text = text.replace(/&lt;/g, "<");
-  text = text.replace(/&gt;/g, ">");
-  text = text.replace(/&quot;/g, '"');
-  text = text.replace(/&#39;/g, "'");
-  // Normalize whitespace
-  text = text.replace(/\s+/g, " ").trim();
-  return text;
+// Helper function to search design standards
+function searchDesignStandards(query: string, caseSensitive = false): any[] {
+  const results: any[] = [];
+  const searchTerm = caseSensitive ? query : query.toLowerCase();
+
+  function searchObject(obj: any, path: string[] = []) {
+    for (const [key, value] of Object.entries(obj)) {
+      const currentPath = [...path, key];
+      const pathString = currentPath.join(".");
+      const searchKey = caseSensitive ? key : key.toLowerCase();
+
+      if (
+        searchKey.includes(searchTerm) ||
+        pathString.toLowerCase().includes(searchTerm)
+      ) {
+        results.push({
+          path: pathString,
+          key,
+          value,
+        });
+      }
+
+      if (typeof value === "string") {
+        const searchValue = caseSensitive ? value : value.toLowerCase();
+        if (searchValue.includes(searchTerm)) {
+          results.push({
+            path: pathString,
+            key,
+            value,
+          });
+        }
+      } else if (typeof value === "object" && value !== null) {
+        searchObject(value, currentPath);
+      }
+    }
+  }
+
+  searchObject(designStandards);
+  return results;
 }
 
 // Create server instance
 const server = new McpServer({
-  name: "event-info-server",
-  version: "1.0.0",
+  name: "design-standards-server",
+  version: "2.0.0",
 });
 
 /**
- * Tool 1: Fetch Sitemap
- * Retrieves and parses the sitemap from an event site
+ * Tool 1: List Brands
+ * Returns a list of all available brands in the design system
  */
 server.registerTool(
-  "fetch_sitemap",
+  "list_brands",
   {
     description:
-      `Fetches and parses the sitemap for a specified event site. ` +
-      `Supported sites: ${VALID_SITES}. ` +
-      "Returns a list of all URLs found in the sitemap, which can be used to discover event pages.",
-    inputSchema: {
-      site: z
-        .enum(["pmc", "unpaved", "wintercycle"])
-        .describe(
-          `The event site to fetch sitemap from. Options: ${VALID_SITES}`,
-        ),
-    },
+      `Lists all available brands in the design standards system. ` +
+      `Returns brand names, full names, and available design categories.`,
+    inputSchema: {},
   },
-  async ({ site }) => {
+  async () => {
     try {
-      const eventSite = EVENT_SITES[site];
-      if (!eventSite) {
-        return {
-          content: [
-            {
-              type: "text",
-              text: `Error: Unknown site "${site}". Valid sites are: ${VALID_SITES}`,
-            },
-          ],
-          isError: true,
-        };
-      }
-
-      const sitemapUrl = `${eventSite.baseUrl}${eventSite.sitemapPath}`;
-      const sitemapXml = await fetchContent(sitemapUrl);
-      const urls = parseSitemap(sitemapXml);
+      const brands = Object.entries(designStandards.brands).map(
+        ([key, brand]: [string, any]) => ({
+          id: key,
+          name: brand.name,
+          shortName: brand.shortName,
+          hasCSS: !!brand.css,
+          hasSassVariables: !!brand.sassVariables,
+          hasAssets: !!brand.assets,
+        }),
+      );
 
       return {
         content: [
           {
             type: "text",
-            text: `Sitemap for ${eventSite.name} (${urls.length} URLs found):\n\n${urls.join("\n")}`,
+            text:
+              `Available brands (${brands.length}):\n\n` +
+              brands
+                .map(
+                  (b) =>
+                    `- ${b.id}: ${b.name} (${b.shortName})\n  CSS: ${b.hasCSS}, SASS: ${b.hasSassVariables}, Assets: ${b.hasAssets}`,
+                )
+                .join("\n"),
           },
         ],
       };
@@ -142,12 +194,7 @@ server.registerTool(
       const errorMessage =
         error instanceof Error ? error.message : String(error);
       return {
-        content: [
-          {
-            type: "text",
-            text: `Error: ${errorMessage}`,
-          },
-        ],
+        content: [{ type: "text", text: `Error: ${errorMessage}` }],
         isError: true,
       };
     }
@@ -155,95 +202,238 @@ server.registerTool(
 );
 
 /**
- * Tool 2: Get Event Page
- * Retrieves content from a specific event page
+ * Tool 2: Get Brand Styles
+ * Returns complete design standards for a specific brand
  */
 server.registerTool(
-  "get_event_page",
+  "get_brand_styles",
   {
     description:
-      "Fetches content from a specific event page. " +
-      "Provide either a full URL or a relative path. " +
-      "The HTML content will be converted to text for easier reading. " +
-      "Use fetch_sitemap first to discover available event pages.",
+      `Gets complete design standards for a specific brand. ` +
+      `Supported brands: ${VALID_BRANDS}. ` +
+      `Returns all CSS variables, font definitions, assets, and SASS variables if available.`,
     inputSchema: {
-      url: z
-        .string()
-        .describe(
-          "The URL or path to fetch. Can be a full URL (https://...) or relative path (/event/...)",
-        ),
-      site: z
-        .enum(["pmc", "unpaved", "wintercycle"])
+      brand: z
+        .enum(["pmc", "unpaved", "wintercycle", "admin"])
+        .describe(`The brand to get styles for. Options: ${VALID_BRANDS}`),
+      format: z
+        .enum(["json", "css"])
         .optional()
+        .default("json")
         .describe(
-          `The event site (used for relative paths). Options: ${VALID_SITES}`,
-        ),
-      extractText: z
-        .boolean()
-        .optional()
-        .default(true)
-        .describe(
-          "Whether to extract plain text from HTML (default: true). Set to false to get raw HTML.",
+          "Output format: 'json' for structured data or 'css' for CSS code (default: json)",
         ),
     },
   },
-  async ({ url, site, extractText }) => {
+  async ({ brand, format }) => {
     try {
-      // Normalize the URL
-      let fetchUrl: string;
-      if (url.startsWith("http://") || url.startsWith("https://")) {
-        fetchUrl = url;
-      } else if (site) {
-        const eventSite = EVENT_SITES[site];
-        if (!eventSite) {
-          return {
-            content: [
-              {
-                type: "text",
-                text: `Error: Unknown site "${site}". Valid sites are: ${VALID_SITES}`,
-              },
-            ],
-            isError: true,
-          };
+      const brandData = designStandards.brands[brand];
+      if (!brandData) {
+        return {
+          content: [
+            {
+              type: "text",
+              text: `Error: Unknown brand "${brand}". Valid brands are: ${VALID_BRANDS}`,
+            },
+          ],
+          isError: true,
+        };
+      }
+
+      if (format === "css") {
+        let css = `/* ${brandData.name} - Design Standards */\n\n`;
+
+        // Generate CSS variables
+        if (brandData.css) {
+          css += `/* CSS Variables */\n`;
+          css += `:root {\n`;
+
+          for (const [category, variables] of Object.entries(brandData.css)) {
+            if (category === "fontFiles") continue;
+            css += `  /* ${category} */\n`;
+            for (const [key, value] of Object.entries(
+              variables as Record<string, any>,
+            )) {
+              css += `  ${key}: ${value};\n`;
+            }
+            css += `\n`;
+          }
+          css += `}\n`;
         }
-        fetchUrl = url.startsWith("/")
-          ? `${eventSite.baseUrl}${url}`
-          : `${eventSite.baseUrl}/${url}`;
+
+        return {
+          content: [{ type: "text", text: css }],
+        };
+      } else {
+        return {
+          content: [{ type: "text", text: JSON.stringify(brandData, null, 2) }],
+        };
+      }
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      return {
+        content: [{ type: "text", text: `Error: ${errorMessage}` }],
+        isError: true,
+      };
+    }
+  },
+);
+
+/**
+ * Tool 3: Get CSS Variables
+ * Returns CSS variables for a specific brand and optional category
+ */
+server.registerTool(
+  "get_css_variables",
+  {
+    description:
+      `Gets CSS variables for a specific brand and optionally a specific category ` +
+      `(colors, borderRadius, boxShadow, fontFamily). ` +
+      `Returns variables in JSON or CSS format.`,
+    inputSchema: {
+      brand: z
+        .enum(["pmc", "unpaved", "wintercycle", "admin"])
+        .describe(
+          `The brand to get CSS variables for. Options: ${VALID_BRANDS}`,
+        ),
+      category: z
+        .enum([
+          "colors",
+          "borderRadius",
+          "boxShadow",
+          "fontFamily",
+          "fontFiles",
+        ])
+        .optional()
+        .describe(
+          "Specific category to retrieve (optional). If omitted, returns all categories.",
+        ),
+      format: z
+        .enum(["json", "css"])
+        .optional()
+        .default("json")
+        .describe("Output format: 'json' or 'css' (default: json)"),
+    },
+  },
+  async ({ brand, category, format }) => {
+    try {
+      const brandData = designStandards.brands[brand];
+      if (!brandData || !brandData.css) {
+        return {
+          content: [
+            { type: "text", text: `Error: No CSS data for brand "${brand}"` },
+          ],
+          isError: true,
+        };
+      }
+
+      const cssData = category
+        ? { [category]: brandData.css[category] }
+        : brandData.css;
+
+      if (format === "css") {
+        let css = `:root {\n`;
+        for (const [cat, variables] of Object.entries(cssData)) {
+          if (cat === "fontFiles") continue;
+          css += `  /* ${cat} */\n`;
+          for (const [key, value] of Object.entries(
+            variables as Record<string, any>,
+          )) {
+            css += `  ${key}: ${value};\n`;
+          }
+          css += `\n`;
+        }
+        css += `}\n`;
+        return {
+          content: [{ type: "text", text: css }],
+        };
+      } else {
+        return {
+          content: [{ type: "text", text: JSON.stringify(cssData, null, 2) }],
+        };
+      }
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      return {
+        content: [{ type: "text", text: `Error: ${errorMessage}` }],
+        isError: true,
+      };
+    }
+  },
+);
+
+/**
+ * Tool 4: Get CSS Rules
+ * Returns CSS rules for components (buttons, cards, modals, typography, etc.)
+ */
+server.registerTool(
+  "get_css_rules",
+  {
+    description:
+      `Gets CSS rules for UI components from the design standards. ` +
+      `Available components: buttons, cards, modals, spacing, typography, accessibility. ` +
+      `Returns styling rules with breakpoints and responsive values.`,
+    inputSchema: {
+      component: z
+        .enum([
+          "buttons",
+          "cards",
+          "modals",
+          "spacing",
+          "typography",
+          "mediaQueries",
+          "contrast",
+          "accessibility",
+        ])
+        .describe("The component type to get CSS rules for"),
+      format: z
+        .enum(["json", "css"])
+        .optional()
+        .default("json")
+        .describe("Output format: 'json' or 'css' (default: json)"),
+      brand: z
+        .enum(["pmc", "unpaved", "wintercycle", "admin"])
+        .optional()
+        .describe(
+          "Optional brand prefix for CSS class names when format is 'css'",
+        ),
+    },
+  },
+  async ({ component, format, brand }) => {
+    try {
+      const componentRules = designStandards.cssRules[component];
+      if (!componentRules) {
+        return {
+          content: [
+            { type: "text", text: `Error: Unknown component "${component}"` },
+          ],
+          isError: true,
+        };
+      }
+
+      if (
+        format === "css" &&
+        ["buttons", "cards", "modals"].includes(component)
+      ) {
+        const prefix = brand || "component";
+        const css = generateComponentCSS(component, componentRules, prefix);
+        return {
+          content: [{ type: "text", text: css }],
+        };
       } else {
         return {
           content: [
-            {
-              type: "text",
-              text: `Error: Must provide either a full URL or a relative path with a site parameter`,
-            },
+            { type: "text", text: JSON.stringify(componentRules, null, 2) },
           ],
-          isError: true,
         };
       }
-
-      const content = await fetchContent(fetchUrl);
-      const displayContent = extractText
-        ? extractTextFromHtml(content)
-        : content;
-
-      return {
-        content: [
-          {
-            type: "text",
-            text: `Content from ${fetchUrl}:\n\n${displayContent}`,
-          },
-        ],
-      };
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : String(error);
       return {
-        content: [
-          {
-            type: "text",
-            text: `Error: ${errorMessage}`,
-          },
-        ],
+        content: [{ type: "text", text: `Error: ${errorMessage}` }],
         isError: true,
       };
     }
@@ -251,86 +441,149 @@ server.registerTool(
 );
 
 /**
- * Tool 3: Search Events
- * Searches for events in the sitemap by URL pattern
+ * Tool 5: Generate Complete CSS
+ * Generates complete CSS stylesheet for a brand
  */
 server.registerTool(
-  "search_events",
+  "generate_css",
   {
     description:
-      "Searches for event-related URLs in a site's sitemap by matching URL patterns. " +
-      "Returns matching URLs that can be used with get_event_page. " +
-      "Useful for finding specific events or event types.",
+      `Generates a complete CSS stylesheet for a brand including all variables, ` +
+      `component styles, and responsive rules. Ready to use in production.`,
     inputSchema: {
-      site: z
-        .enum(["pmc", "unpaved", "wintercycle"])
-        .describe(`The event site to search. Options: ${VALID_SITES}`),
-      pattern: z
+      brand: z
+        .enum(["pmc", "unpaved", "wintercycle", "admin"])
+        .describe(`The brand to generate CSS for. Options: ${VALID_BRANDS}`),
+      includeComponents: z
+        .array(z.enum(["buttons", "cards", "modals", "typography"]))
+        .optional()
+        .describe(
+          "Optional list of components to include. If omitted, includes all.",
+        ),
+    },
+  },
+  async ({ brand, includeComponents }) => {
+    try {
+      const brandData = designStandards.brands[brand];
+      if (!brandData) {
+        return {
+          content: [{ type: "text", text: `Error: Unknown brand "${brand}"` }],
+          isError: true,
+        };
+      }
+
+      let css = `/* ${brandData.name} - Complete Stylesheet */\n`;
+      css += `/* Generated: ${new Date().toISOString()} */\n\n`;
+
+      // CSS Variables
+      css += `/* ========== CSS Variables ========== */\n`;
+      css += `:root {\n`;
+
+      if (brandData.css) {
+        for (const [category, variables] of Object.entries(brandData.css)) {
+          if (category === "fontFiles") continue;
+          css += `  /* ${category} */\n`;
+          for (const [key, value] of Object.entries(
+            variables as Record<string, any>,
+          )) {
+            css += `  ${key}: ${value};\n`;
+          }
+          css += `\n`;
+        }
+      }
+
+      css += `}\n\n`;
+
+      // Component Styles
+      const components = includeComponents || ["buttons", "cards", "modals"];
+      for (const component of components) {
+        if (designStandards.cssRules[component]) {
+          css += `/* ========== ${component.charAt(0).toUpperCase() + component.slice(1)} ========== */\n`;
+          css += generateComponentCSS(
+            component,
+            designStandards.cssRules[component],
+            brand,
+          );
+          css += `\n`;
+        }
+      }
+
+      return {
+        content: [{ type: "text", text: css }],
+      };
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      return {
+        content: [{ type: "text", text: `Error: ${errorMessage}` }],
+        isError: true,
+      };
+    }
+  },
+);
+
+/**
+ * Tool 6: Search Design Standards
+ * Searches through all design standards for a specific term
+ */
+server.registerTool(
+  "search_design_standards",
+  {
+    description:
+      `Searches through all design standards for a specific term or color value. ` +
+      `Useful for finding where specific values are used or what options exist for a property.`,
+    inputSchema: {
+      query: z
         .string()
         .describe(
-          "The search pattern to match in URLs (e.g., 'event', 'ride', '2026')",
+          "The search term (e.g., 'primary', '#AB292C', 'radius', 'shadow')",
         ),
-      caseInsensitive: z
+      caseSensitive: z
         .boolean()
         .optional()
-        .default(true)
-        .describe("Whether to perform case-insensitive search (default: true)"),
+        .default(false)
+        .describe("Whether to perform case-sensitive search (default: false)"),
+      maxResults: z
+        .number()
+        .optional()
+        .default(20)
+        .describe("Maximum number of results to return (default: 20)"),
     },
   },
-  async ({ site, pattern, caseInsensitive }) => {
+  async ({ query, caseSensitive, maxResults }) => {
     try {
-      const eventSite = EVENT_SITES[site];
-      if (!eventSite) {
+      const results = searchDesignStandards(query, caseSensitive);
+      const limitedResults = results.slice(0, maxResults);
+      const hasMore = results.length > maxResults;
+
+      if (results.length === 0) {
         return {
           content: [
             {
               type: "text",
-              text: `Error: Unknown site "${site}". Valid sites are: ${VALID_SITES}`,
-            },
-          ],
-          isError: true,
-        };
-      }
-
-      const sitemapUrl = `${eventSite.baseUrl}${eventSite.sitemapPath}`;
-      const sitemapXml = await fetchContent(sitemapUrl);
-      const urls = parseSitemap(sitemapXml);
-
-      const searchPattern = caseInsensitive ? pattern.toLowerCase() : pattern;
-      const matches = urls.filter((url) => {
-        const searchUrl = caseInsensitive ? url.toLowerCase() : url;
-        return searchUrl.includes(searchPattern);
-      });
-
-      if (matches.length === 0) {
-        return {
-          content: [
-            {
-              type: "text",
-              text: `No URLs found matching pattern "${pattern}" in the ${eventSite.name} sitemap.`,
+              text: `No results found for "${query}"`,
             },
           ],
         };
       }
+
+      const output =
+        `Found ${results.length} result${results.length === 1 ? "" : "s"} for "${query}"${hasMore ? ` (showing first ${maxResults})` : ""}:\n\n` +
+        limitedResults
+          .map(
+            (r) =>
+              `Path: ${r.path}\nValue: ${typeof r.value === "object" ? JSON.stringify(r.value, null, 2) : r.value}`,
+          )
+          .join("\n\n---\n\n");
 
       return {
-        content: [
-          {
-            type: "text",
-            text: `Found ${matches.length} URL${matches.length === 1 ? "" : "s"} matching "${pattern}" in ${eventSite.name}:\n\n${matches.join("\n")}`,
-          },
-        ],
+        content: [{ type: "text", text: output }],
       };
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : String(error);
       return {
-        content: [
-          {
-            type: "text",
-            text: `Error: ${errorMessage}`,
-          },
-        ],
+        content: [{ type: "text", text: `Error: ${errorMessage}` }],
         isError: true,
       };
     }
@@ -338,69 +591,38 @@ server.registerTool(
 );
 
 /**
- * Tool 4: List All Events
- * Gets an overview of all event-related URLs from a site
+ * Tool 7: Get Usage Guidelines
+ * Returns usage guidelines and best practices for design standards
  */
 server.registerTool(
-  "list_all_events",
+  "get_usage_guidelines",
   {
     description:
-      "Lists all URLs from a site's sitemap with optional filtering. " +
-      "Provides a complete overview of available pages. " +
-      "Use this to discover what events and information are available.",
+      `Returns usage guidelines and best practices for implementing the design standards. ` +
+      `Includes information about colors, implementation patterns, and accessibility.`,
     inputSchema: {
-      site: z
-        .enum(["pmc", "unpaved", "wintercycle"])
-        .describe(`The event site to list URLs from. Options: ${VALID_SITES}`),
-      limit: z
-        .number()
+      category: z
+        .enum(["colors", "typography", "spacing", "accessibility", "all"])
         .optional()
-        .default(50)
-        .describe(
-          "Maximum number of URLs to return (default: 50). Set to 0 for no limit.",
-        ),
+        .default("all")
+        .describe("Specific usage category (default: all)"),
     },
   },
-  async ({ site, limit }) => {
+  async ({ category }) => {
     try {
-      const eventSite = EVENT_SITES[site];
-      if (!eventSite) {
-        return {
-          content: [
-            {
-              type: "text",
-              text: `Error: Unknown site "${site}". Valid sites are: ${VALID_SITES}`,
-            },
-          ],
-          isError: true,
-        };
-      }
-
-      const sitemapUrl = `${eventSite.baseUrl}${eventSite.sitemapPath}`;
-      const sitemapXml = await fetchContent(sitemapUrl);
-      const urls = parseSitemap(sitemapXml);
-
-      const limitedUrls = limit > 0 ? urls.slice(0, limit) : urls;
-      const hasMore = limit > 0 && urls.length > limit;
+      const usage =
+        category === "all"
+          ? designStandards.usage
+          : { [category]: designStandards.usage[category] };
 
       return {
-        content: [
-          {
-            type: "text",
-            text: `${eventSite.name} - Found ${urls.length} total URLs${hasMore ? ` (showing first ${limit})` : ""}:\n\n${limitedUrls.join("\n")}${hasMore ? `\n\n... and ${urls.length - limit} more` : ""}`,
-          },
-        ],
+        content: [{ type: "text", text: JSON.stringify(usage, null, 2) }],
       };
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : String(error);
       return {
-        content: [
-          {
-            type: "text",
-            text: `Error: ${errorMessage}`,
-          },
-        ],
+        content: [{ type: "text", text: `Error: ${errorMessage}` }],
         isError: true,
       };
     }
@@ -413,13 +635,20 @@ async function main() {
   await server.connect(transport);
 
   // Log to stderr (not stdout, which is used for MCP communication)
-  console.error("Event Information Server running on stdio");
-  console.error("Supported sites:", VALID_SITES);
+  console.error("Design Standards Server running on stdio");
+  console.error("Supported brands:", VALID_BRANDS);
   console.error("Available tools:");
-  console.error("  - fetch_sitemap: Get the sitemap for an event site");
-  console.error("  - get_event_page: Fetch a specific event page");
-  console.error("  - search_events: Search for events by URL pattern");
-  console.error("  - list_all_events: List all URLs from a site");
+  console.error("  - list_brands: List all available brands");
+  console.error("  - get_brand_styles: Get complete styles for a brand");
+  console.error(
+    "  - get_css_variables: Get CSS variables for a brand/category",
+  );
+  console.error("  - get_css_rules: Get CSS rules for components");
+  console.error("  - generate_css: Generate complete CSS stylesheet");
+  console.error("  - search_design_standards: Search through design standards");
+  console.error(
+    "  - get_usage_guidelines: Get usage guidelines and best practices",
+  );
 }
 
 main().catch((error) => {

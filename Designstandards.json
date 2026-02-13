@@ -1,0 +1,363 @@
+{
+  "version": "2.0.0",
+  "cssFormat": true,
+  "brands": {
+    "pmc": {
+      "name": "Pan-Mass Challenge",
+      "shortName": "PMC",
+      "css": {
+        "colors": {
+          "--pmc-primary": "#AB292C",
+          "--pmc-primary-hover": "#8B2123",
+          "--pmc-secondary": "#6c757d",
+          "--pmc-secondary-hover": "#5a6268",
+          "--pmc-bg": "#FFFFFF",
+          "--pmc-surface": "#fcfbfc",
+          "--pmc-text": "#212529",
+          "--pmc-text-light": "#333",
+          "--pmc-text-muted": "#666",
+          "--pmc-border": "#dcdcdc",
+          "--pmc-link": "#0056b3",
+          "--pmc-success": "#12B76A",
+          "--pmc-warning": "#F79009",
+          "--pmc-danger": "#F04438"
+        },
+        "borderRadius": {
+          "--radius-sm": "6px",
+          "--radius-md": "8px",
+          "--radius-lg": "10px",
+          "--radius-xl": "12px"
+        },
+        "boxShadow": {
+          "--shadow-card": "0 8px 16px rgba(0, 0, 0, 0.1)",
+          "--shadow-hover": "0 12px 24px rgba(0, 0, 0, 0.15)",
+          "--shadow-button": "0 4px 8px rgba(0, 0, 0, 0.2)",
+          "--shadow-soft": "0 4px 6px rgba(0, 0, 0, 0.1)"
+        },
+        "fontFamily": {
+          "--font-primary": "PMCFont, system-ui, -apple-system, sans-serif",
+          "--font-sans": "Helvetica Neue, Arial, sans-serif",
+          "--font-body": "Arial, sans-serif"
+        },
+        "fontFiles": {
+          "PMCFont": "/fonts/GT-Walsheim-Regular.otf"
+        }
+      },
+      "assets": {
+        "logo-light": "/assets/pmc/logo.svg",
+        "logo-dark": "/assets/pmc/logo-dark.svg"
+      }
+    },
+    "unpaved": {
+      "name": "PMC Unpaved",
+      "shortName": "Unpaved",
+      "css": {
+        "colors": {
+          "--unpaved-primary": "#26564F",
+          "--unpaved-primary-hover": "#1e443f",
+          "--unpaved-secondary": "#6c757d",
+          "--unpaved-secondary-hover": "#5a6268",
+          "--unpaved-bg": "#FFFFFF",
+          "--unpaved-surface": "#fcfbfc",
+          "--unpaved-text": "#212529",
+          "--unpaved-text-light": "#333",
+          "--unpaved-text-muted": "#666",
+          "--unpaved-border": "#dcdcdc",
+          "--unpaved-link": "#0056b3",
+          "--unpaved-success": "#12B76A",
+          "--unpaved-warning": "#F79009",
+          "--unpaved-danger": "#F04438"
+        },
+        "borderRadius": {
+          "--radius-sm": "6px",
+          "--radius-md": "8px",
+          "--radius-lg": "10px",
+          "--radius-xl": "12px"
+        },
+        "boxShadow": {
+          "--shadow-card": "0 8px 16px rgba(0, 0, 0, 0.1)",
+          "--shadow-hover": "0 12px 24px rgba(0, 0, 0, 0.15)",
+          "--shadow-button": "0 4px 8px rgba(0, 0, 0, 0.2)",
+          "--shadow-soft": "0 4px 6px rgba(0, 0, 0, 0.1)"
+        },
+        "fontFamily": {
+          "--font-primary": "PMCFont, system-ui, -apple-system, sans-serif",
+          "--font-sans": "Helvetica Neue, Arial, sans-serif",
+          "--font-body": "Arial, sans-serif"
+        },
+        "fontFiles": {
+          "PMCFont": "/fonts/GT-Walsheim-Regular.otf"
+        }
+      },
+      "assets": {
+        "logo-light": "/assets/unpaved/logo.svg",
+        "logo-dark": "/assets/unpaved/logo-dark.svg"
+      }
+    },
+    "wintercycle": {
+      "name": "PMC Winter Cycle",
+      "shortName": "Winter Cycle",
+      "css": {
+        "colors": {
+          "--winter-primary": "#00aeef",
+          "--winter-primary-hover": "#0094d1",
+          "--winter-secondary": "#00233D",
+          "--winter-secondary-hover": "#001a2e",
+          "--winter-shade": "#6c757d",
+          "--winter-bg": "#FFFFFF",
+          "--winter-surface": "#fcfbfc",
+          "--winter-text": "#212529",
+          "--winter-text-light": "#333",
+          "--winter-text-muted": "#666",
+          "--winter-border": "#dcdcdc",
+          "--winter-link": "#0056b3",
+          "--winter-success": "#12B76A",
+          "--winter-warning": "#F79009",
+          "--winter-danger": "#F04438",
+          "--winter-fenway-green": "#0C2340",
+          "--winter-fenway-red": "#BD3039"
+        },
+        "borderRadius": {
+          "--radius-sm": "4px",
+          "--radius-md": "8px",
+          "--radius-lg": "10px",
+          "--radius-xl": "12px"
+        },
+        "boxShadow": {
+          "--shadow-card": "0 8px 16px rgba(0, 0, 0, 0.1)",
+          "--shadow-hover": "0 12px 24px rgba(0, 0, 0, 0.15)",
+          "--shadow-button": "0 4px 8px rgba(0, 0, 0, 0.2)",
+          "--shadow-soft": "0 4px 6px rgba(0, 0, 0, 0.1)",
+          "--shadow-focus": "0 4px 12px rgba(0, 174, 239, 0.3)"
+        },
+        "fontFamily": {
+          "--font-primary": "WinterFont, system-ui, -apple-system, sans-serif",
+          "--font-sans": "Helvetica Neue, Arial, sans-serif",
+          "--font-body": "Arial, sans-serif"
+        },
+        "fontFiles": {
+          "WinterFont": "/fonts/GolosText-Regular.ttf"
+        }
+      },
+      "assets": {
+        "logo-light": "/assets/wintercycle/logo.svg",
+        "logo-dark": "/assets/wintercycle/logo-dark.svg"
+      }
+    },
+    "admin": {
+      "name": "Admin Portal",
+      "shortName": "Admin",
+      "css": {
+        "colors": {
+          "--admin-pmc-blue": "#3D5B7E",
+          "--admin-pmc-gold": "#FCCF81",
+          "--admin-pmc-teal": "#6BB0AF",
+          "--admin-base": "#3D5B7E",
+          "--admin-base-foreground": "dynamic",
+          "--admin-reverse-bg": "#39A1F4",
+          "--admin-accent": "#6BB0AF",
+          "--admin-accent-light": "#FCCF81",
+          "--admin-accent-dark": "#101010",
+          "--admin-bg": "#FFFFFF",
+          "--admin-text": "#0B1220",
+          "--admin-surface": "#F8FAFC",
+          "--admin-border": "#E2E8F0"
+        },
+        "borderRadius": {
+          "--radius-sm": "6px",
+          "--radius-md": "8px",
+          "--radius-lg": "10px",
+          "--radius-xl": "12px"
+        },
+        "boxShadow": {
+          "--shadow-card": "0 8px 16px rgba(0, 0, 0, 0.1)",
+          "--shadow-hover": "0 12px 24px rgba(0, 0, 0, 0.15)",
+          "--shadow-button": "0 4px 8px rgba(0, 0, 0, 0.2)",
+          "--shadow-soft": "0 4px 6px rgba(0, 0, 0, 0.1)"
+        },
+        "fontFamily": {
+          "--font-primary": "system-ui, -apple-system, sans-serif",
+          "--font-sans": "Helvetica Neue, Arial, sans-serif",
+          "--font-body": "Arial, sans-serif"
+        }
+      },
+      "sassVariables": {
+        "$pmc-blue": "#3D5B7E",
+        "$pmc-gold": "#FCCF81",
+        "$pmc-teal": "#6BB0AF",
+        "$base-color": "$pmc-blue",
+        "$base-foreground-color": "dynamic($base-light-color)",
+        "$reverse-background-color": "dynamic(#39A1F4)",
+        "$accent-color": "dynamic($pmc-teal)",
+        "$accent-light-color": "dynamic($pmc-gold)",
+        "$accent-dark-color": "dynamic(#101010)"
+      }
+    }
+  },
+  "shared": {
+    "cssVariables": {
+      "--background": "#fcfbfc",
+      "--foreground": "#ffffff"
+    },
+    "dynamicVariables": {
+      "--theme-primary": "Set dynamically based on event (pmc/unpaved/wintercycle)",
+      "--theme-secondary": "Set dynamically based on event (pmc/unpaved/wintercycle)"
+    }
+  },
+  "cssRules": {
+    "buttons": {
+      "padding": {
+        "desktop": "0.75rem 1.25rem",
+        "mobile": "0.5rem 0.8rem",
+        "css": "padding: 0.75rem 1.25rem;"
+      },
+      "borderRadius": {
+        "value": "6px",
+        "css": "border-radius: 6px;"
+      },
+      "fontWeight": {
+        "value": "600",
+        "css": "font-weight: 600;"
+      },
+      "minWidth": {
+        "desktop": "80px",
+        "mobile": "60px",
+        "css": "min-width: 80px;"
+      },
+      "transition": {
+        "value": "all 0.2s ease",
+        "css": "transition: all 0.2s ease;"
+      },
+      "hover": {
+        "transform": "translateY(-2px)",
+        "css": "transform: translateY(-2px);"
+      },
+      "color": {
+        "value": "white",
+        "css": "color: white;"
+      },
+      "cursor": {
+        "value": "pointer",
+        "css": "cursor: pointer;"
+      }
+    },
+    "cards": {
+      "borderRadius": {
+        "value": "8px",
+        "css": "border-radius: 8px;"
+      },
+      "boxShadow": {
+        "value": "0 8px 16px rgba(0, 0, 0, 0.1)",
+        "css": "box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);"
+      },
+      "border": {
+        "value": "1px solid #dcdcdc",
+        "css": "border: 1px solid #dcdcdc;"
+      },
+      "padding": {
+        "desktop": "2rem",
+        "tablet": "20px",
+        "mobile": "15px",
+        "css": "padding: 2rem;"
+      },
+      "backgroundColor": {
+        "value": "#ffffff",
+        "css": "background-color: #ffffff;"
+      }
+    },
+    "modals": {
+      "borderRadius": {
+        "value": "12px",
+        "css": "border-radius: 12px;"
+      },
+      "boxShadow": {
+        "value": "0 10px 30px rgba(0, 0, 0, 0.15)",
+        "css": "box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);"
+      },
+      "background": {
+        "value": "white",
+        "css": "background: white;"
+      },
+      "overlay": {
+        "standard": "rgba(0, 0, 0, 0.5)",
+        "photo": "rgba(0, 0, 0, 0.9)",
+        "css": "background: rgba(0, 0, 0, 0.5);"
+      }
+    },
+    "spacing": {
+      "scale": {
+        "values": [0, 4, 8, 12, 16, 24, 32, 48, 64, 96, 128],
+        "units": "px"
+      },
+      "gap": {
+        "small": {
+          "value": "0.4rem - 0.5rem",
+          "css": "gap: 0.5rem;"
+        },
+        "medium": {
+          "value": "0.75rem",
+          "css": "gap: 0.75rem;"
+        },
+        "large": {
+          "value": "1rem - 1.5rem",
+          "css": "gap: 1.5rem;"
+        }
+      }
+    },
+    "typography": {
+      "title": {
+        "desktop": "1.5rem",
+        "css": "font-size: 1.5rem;"
+      },
+      "subtitle": {
+        "value": "0.8rem - 0.85rem",
+        "css": "font-size: 0.85rem;"
+      },
+      "body": {
+        "desktop": "1rem",
+        "mobile": "0.85rem - 0.9rem",
+        "css": "font-size: 1rem;"
+      },
+      "small": {
+        "value": "0.8rem - 0.85rem",
+        "css": "font-size: 0.85rem;"
+      },
+      "lineHeight": {
+        "value": "1.5",
+        "css": "line-height: 1.5;"
+      },
+      "letterSpacing": {
+        "normal": "normal",
+        "tight": "0.3px",
+        "wide": "0.5px"
+      }
+    },
+    "mediaQueries": {
+      "mobile": "@media (max-width: 480px)",
+      "tablet": "@media (max-width: 600px)",
+      "desktop": "@media (max-width: 768px)",
+      "large": "@media (min-width: 1024px)"
+    },
+    "contrast": {
+      "minTextContrast": 4.5,
+      "minUIContrast": 3.0
+    },
+    "accessibility": {
+      "focusVisible": {
+        "css": "outline: 2px solid currentColor; outline-offset: 2px;"
+      },
+      "fontSmoothing": {
+        "webkit": "-webkit-font-smoothing: antialiased;",
+        "moz": "-moz-osx-font-smoothing: grayscale;"
+      }
+    }
+  },
+  "usage": {
+    "colors": {
+      "primary": "Use var(--theme-primary) or brand-specific variables for buttons, links, active states",
+      "secondary": "Use var(--theme-secondary) or brand-specific variables for supporting elements",
+      "danger": "Use danger colors for destructive actions only"
+    },
+    "implementation": "Apply CSS variables dynamically based on event context. Reference --theme-primary and --theme-secondary for event-specific styling."
+  }
+}
