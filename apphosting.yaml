@@ -1,0 +1,19 @@
+# Firebase App Hosting configuration
+# This tells Firebase how to build and run your MCP server
+
+scripts:
+  # Install dependencies and build TypeScript
+  buildCommand: npm ci && npm run build
+
+  # Start the server (listens on process.env.PORT)
+  runCommand: npm run start
+
+# Optional: Environment variables
+# env:
+#   - variable: NODE_ENV
+#     value: production
+#     availability: BUILD
+
+# Optional: CPU/Memory settings (defaults are usually fine)
+# cpu: 1
+# memory: 512Mi
